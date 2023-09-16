@@ -17,7 +17,7 @@ type VirtualTimeInterface interface {
 	Bang(start time.Time, interval time.Duration, end time.Time)
 }
 
-// Synchronizer is the main struct for the laciumtime package. it implements the VirtualTimeInterface
+// Synchronizer is the main struct for the lemonlime package. it implements the VirtualTimeInterface
 type Synchronizer struct {
 	// logging stream
 	Log *log.Logger `json:"-"`
