@@ -8,6 +8,7 @@ import (
 func main() {
 	var newTime time.Time
 	timeServer := NewVirtualTimeFromDate(newTime)
+	timeServer.Interval = 42 * time.Second
 	timeServer.CabPublishEvents = true
 	go timeServer.Bang(timeServer.Now(), timeServer.Interval, timeServer.End)
 
@@ -19,18 +20,18 @@ func main() {
 		panic(err)
 	}
 	timeServer.RegisterEvent(newEvent.ID, newEvent)
+	go timeServer.PopEvent(newEvent.ID, newEvent, 42)
 	exampleTask(newEvent)
-	timeServer.PopEvent(newEvent.ID, newEvent.ID)
 
 	// block
-	time.Sleep(5 * time.Second)
+	time.Sleep(15 * time.Second)
 
 }
 
 func exampleTask(event *Event) {
 	defer event.CompleteEvent()
 	// do something with the event
-	time.Sleep(1 * time.Second)
+	time.Sleep(3 * time.Second)
 	fmt.Println("event done!")
 
 }

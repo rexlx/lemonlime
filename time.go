@@ -76,7 +76,14 @@ func (s *Synchronizer) ClearEvents(id string) {
 }
 
 // Does NOT maintain order
-func (s *Synchronizer) PopEvent(memberId, eventId string) {
+func (s *Synchronizer) PopEvent(memberId string, event *Event, n int) {
+	if n < 1 {
+		n = 150
+	}
+	for !event.Complete {
+		time.Sleep(time.Duration(n) * time.Millisecond)
+	}
+	s.Log.Println("PopEvent: event completion detected, attempting to remove", event.ID)
 	s.Mu.Lock()
 	defer s.Mu.Unlock()
 	if _, ok := s.Members[memberId]; !ok {
@@ -84,13 +91,13 @@ func (s *Synchronizer) PopEvent(memberId, eventId string) {
 	} else {
 		for i, v := range s.Members[memberId] {
 			// TODO maybe we dont care if it's complete?
-			if v.ID == eventId && v.Complete {
-				s.Log.Println("PopEvent: removing:", eventId)
+			if v.ID == event.ID {
+				s.Log.Println("PopEvent: removing:", event.ID)
 				s.Members[memberId] = append(s.Members[memberId][:i], s.Members[memberId][i+1:]...)
 				return
 			}
 		}
-		s.Log.Println("PopEvent: Event not found:", eventId)
+		s.Log.Println("PopEvent: Event not found:", event.ID)
 	}
 }
 
@@ -186,7 +193,7 @@ eternity:
 			// advance the synchronizer if permitted
 			if s.CanAdvance() {
 				s.Advance()
-				s.Log.Println("Time / Elapsed", s.Current, s.Elapsed)
+				// s.Log.Println("Time / Elapsed", s.Current, s.Elapsed)
 			} else {
 				s.Log.Println("Can't advance")
 			}
